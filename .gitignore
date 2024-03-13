@@ -1,3 +1,5 @@
-.env
-tsconfig.json
+dist
 node_modules
+.env
+package-lock.json
+tsconfig.json
