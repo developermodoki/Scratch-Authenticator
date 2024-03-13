@@ -106,7 +106,10 @@ client.on("interactionCreate", async (i) => {
                             { name: "検証用ID", value: uuid },
                             { name: "認証日時", value: new Date().toLocaleString() },
                         )
-                    i.guild?.channels.cache.get(process.env.LOG_CHANNEL_ID as string)?.send({ embeds: [embed] });
+                    const channel = i.guild?.channels.cache.get(process.env.LOG_CHANNEL_ID as string) as TextChannel;
+                    if(channel && channel.isTextBased()) {
+                        channel.send({ embeds: [embed] });
+                    }
                 }
             } else {
                 console.log(data, uuid, scratchId);
