@@ -1,3 +1,4 @@
+// deno-lint-ignore-file
 import {
     Client,
     IntentsBitField,
@@ -12,11 +13,13 @@ import {
     TextInputBuilder,
     GuildMemberRoleManager,
     TextChannel,
-} from "discord.js";
-import dotenv from "dotenv";
-import axios from "axios";
+} from "npm:discord.js";
+import axios from "npm:axios";
 
-dotenv.config();
+import { load } from "https://deno.land/std@0.219.0/dotenv/mod.ts";
+
+
+await load({export: true});
 
 const client = new Client({
     intents: [IntentsBitField.Flags.Guilds],
@@ -51,7 +54,7 @@ client.on("ready", () => {
         client.user?.setPresence({
             activities: [
                 {
-                    name: `${client.ws.ping} ms | Node.js ${process.version}`,
+                    name: `${client.ws.ping} ms | Deno ${Deno.version.deno}`,
                     type: ActivityType.Watching,
                 },
             ],
@@ -85,7 +88,7 @@ client.on("interactionCreate", async (i) => {
                 ephemeral: true,
             });
             const { data } = await axios({
-                url: `https://clouddata.scratch.mit.edu/logs?projectid=${process.env.PROJECT_ID}&limit=40&offset=0`,
+                url: `https://clouddata.scratch.mit.edu/logs?projectid=${Deno.env.get("PROJECT_ID")}&limit=40&offset=0`,
                 responseType: "json",
                 method: "get",
             });
@@ -95,7 +98,7 @@ client.on("interactionCreate", async (i) => {
             )) {
                 i.followUp("認証が完了しました。");
                 if (i.channel?.isTextBased()) {
-                    (i.member?.roles as GuildMemberRoleManager).add(process.env.ROLE_ID as string);
+                    (i.member?.roles as GuildMemberRoleManager).add(Deno.env.get("ROLE_ID") as string);
                     const embed = new EmbedBuilder()
                         .setTitle("認証完了")
                         .setColor("Green")
@@ -106,7 +109,7 @@ client.on("interactionCreate", async (i) => {
                             { name: "検証用ID", value: uuid },
                             { name: "認証日時", value: new Date().toLocaleString() },
                         )
-                    const channel = i.guild?.channels.cache.get(process.env.LOG_CHANNEL_ID as string) as TextChannel;
+                    const channel = i.guild?.channels.cache.get(Deno.env.get("LOG_CHANNEL_ID") as string) as TextChannel;
                     if(channel && channel.isTextBased()) {
                         channel.send({ embeds: [embed] });
                     }
@@ -215,7 +218,7 @@ client.on("interactionCreate", async (i) => {
                     .setStyle(ButtonStyle.Success);
                 const row = new ActionRowBuilder<ButtonBuilder>().addComponents(auth);
                 i.editReply({
-                    content: `ユーザー名の確認ができました。\n次に、下のコード(\`XXXXXXXXX\`形式)を、 https://scratch.mit.edu/projects/${process.env.PROJECT_ID}/fullscreen/ に入力してください。`,
+                    content: `ユーザー名の確認ができました。\n次に、下のコード(\`XXXXXXXXX\`形式)を、 https://scratch.mit.edu/projects/${Deno.env.get("PROJECT_ID")}/fullscreen/ に入力してください。`,
                     embeds: [embed],
                     components: [row],
                 });
@@ -230,4 +233,4 @@ client.on("interactionCreate", async (i) => {
 });
 
 
-client.login(process.env.TOKEN);
+client.login(Deno.env.get("TOKEN"));
